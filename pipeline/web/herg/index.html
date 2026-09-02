@@ -1,0 +1,1033 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Research-stage hERG liability prediction with classification, IC10, IC30, IC50, uncertainty, and applicability evidence.">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>hERG Prediction Platform</title>
+    <link rel="stylesheet" href="/assets/styles.css?v=20260902-1">
+    <script defer src="/assets/app.js?v=20260902-1"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#workflow-nav">Skip to analysis workspace</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="hERG Prediction Platform home">
+        <span class="brand-mark" aria-hidden="true">h</span>
+        <span>hERG <b>Prediction Platform</b></span>
+      </a>
+      <div class="target-control">
+        <label for="target-select">Target</label>
+        <select id="target-select" aria-describedby="target-note">
+          <option value="herg">hERG / KCNH2</option>
+        </select>
+        <span id="target-note" class="visually-hidden">hERG is the only live target in this release.</span>
+      </div>
+      <span class="release-pill">Research release · Aug 2026</span>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Medicinal chemistry decision support</p>
+          <h1 id="hero-title">Predict, compare, and interpret hERG liability.</h1>
+          <p class="hero-lede">
+            Move from a structure to an hERG estimate, inspect calculated chemistry, or compare a
+            targeted structural edit against its parent with explicit evidence boundaries.
+          </p>
+          <div class="hero-tags" aria-label="Platform characteristics">
+            <span>Externally evaluated regression</span>
+            <span>Applicability-aware</span>
+            <span>Research use only</span>
+          </div>
+        </div>
+        <aside class="model-policy" aria-label="Current model policy">
+          <p class="model-policy-label">Model policy</p>
+          <h2>Ligand-only remains the default</h2>
+          <p>
+            The optional receptor-aware mode truly combines ligand and receptor features. It remains a
+            research comparison because it did not conclusively beat the strongest ligand-only comparator.
+          </p>
+        </aside>
+      </section>
+
+      <section id="workflow-nav" class="workflow-switcher" aria-labelledby="workflow-title">
+        <div class="workflow-switcher-heading">
+          <div>
+            <p class="eyebrow">Analysis workspace</p>
+            <h2 id="workflow-title">Choose a workflow</h2>
+          </div>
+          <p id="workflow-description">Predict hERG liability from one structure.</p>
+        </div>
+        <div class="workflow-tabs" role="tablist" aria-label="hERG workflows">
+          <button
+            id="workflow-tab-predict"
+            class="workflow-tab is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="predict"
+            data-workflow-target="predict"
+          >
+            <span class="workflow-index">01</span>
+            <span><b>Predict</b><small>One structure → risk and IC50</small></span>
+          </button>
+          <button
+            id="workflow-tab-optimize"
+            class="workflow-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="optimize"
+            data-workflow-target="optimize"
+          >
+            <span class="workflow-index">02</span>
+            <span><b>Optimize</b><small>Parent → targeted edit comparison</small></span>
+          </button>
+          <button
+            id="workflow-tab-properties"
+            class="workflow-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="properties"
+            data-workflow-target="properties"
+          >
+            <span class="workflow-index">03</span>
+            <span><b>Properties</b><small>Descriptors → chemistry context</small></span>
+          </button>
+        </div>
+      </section>
+
+      <section
+        id="predict"
+        class="predict-section workflow-panel"
+        role="tabpanel"
+        aria-labelledby="workflow-tab-predict predict-title"
+        data-workflow-panel="predict"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Predict hERG</p>
+            <h2 id="predict-title">Single-structure assessment</h2>
+          </div>
+          <p>SMILES are processed for the response and are not written to a request log or persistent server storage.</p>
+        </div>
+
+        <form id="prediction-form" class="prediction-form" novalidate>
+          <label for="smiles">SMILES</label>
+          <textarea
+            id="smiles"
+            name="smiles"
+            rows="4"
+            spellcheck="false"
+            autocapitalize="none"
+            autocomplete="off"
+            maxlength="4096"
+            required
+            aria-describedby="smiles-help"
+          >C#CCC1=C(C)[C@H](OC(=O)[C@H]2[C@H](C=C(C)C)C2(C)C)CC1=O</textarea>
+          <div class="form-tools">
+            <div class="example-control">
+              <label for="example">Example molecule</label>
+              <select id="example">
+                <option value="">Select an example</option>
+                <optgroup label="Measured release checks">
+                  <option value="C#CCC1=C(C)[C@H](OC(=O)[C@H]2[C@H](C=C(C)C)C2(C)C)CC1=O">Public comparator A · observed 43.353 µM · PubChem CID 16760153</option>
+                  <option value="CN(C)C(=O)C1(N2CCCCC2)CCN(CCC2(c3ccc(Cl)c(Cl)c3)CN(C(=O)c3ccccc3)CCO2)CC1">Public comparator B · observed 11.493 µM · PubChem CID 60196404</option>
+                </optgroup>
+                <optgroup label="Unlabeled exploration">
+                  <option value="CCN(CC)CCCC(C)Nc1ncc2cc(OC)c(OC)cc2n1">Unlabeled reference demo</option>
+                  <option value="Oc1cc2ccccc2c2ccccc12">Unlabeled domain stress demo</option>
+                </optgroup>
+                <optgroup id="internal-example-options" label="Local internal examples" hidden></optgroup>
+              </select>
+              <p id="example-note" class="example-note" hidden></p>
+            </div>
+            <p id="smiles-help">Tip: press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to run.</p>
+          </div>
+          <fieldset class="mode-selector">
+            <legend>Prediction mode</legend>
+            <label class="mode-option">
+              <input type="radio" name="mode" value="ligand" checked>
+              <span>
+                <b>Ligand-only</b>
+                <small>RDKit2D + Morgan models · usually under 1 second</small>
+              </span>
+            </label>
+            <label class="mode-option research-mode">
+              <input type="radio" name="mode" value="ligand_receptor">
+              <span>
+                <b>Ligand + receptor</b>
+                <small>Select 1–6 Vina receptor states · only 8ZYO drives the both-feature model</small>
+              </span>
+            </label>
+          </fieldset>
+          <fieldset id="predict-receptor-selector" class="receptor-selector" disabled hidden>
+            <legend>Receptor-state panel <span>select 1–6</span></legend>
+            <p id="predict-receptor-capability" class="selector-note">Checking receptor-state availability for this server.</p>
+            <div class="receptor-option-grid">
+              <label class="receptor-option model-coupled"><input type="checkbox" name="receptor_ids" value="8ZYO" data-receptor-context="predict" checked><span><b>8ZYO</b><small>Astemizole-bound · model-coupled</small></span></label>
+              <label class="receptor-option exploratory"><input type="checkbox" name="receptor_ids" value="8ZYN" data-receptor-context="predict"><span><b>8ZYN</b><small>Apo · docking-only</small></span></label>
+              <label class="receptor-option exploratory"><input type="checkbox" name="receptor_ids" value="8ZYP" data-receptor-context="predict"><span><b>8ZYP</b><small>E-4031-bound · docking-only</small></span></label>
+              <label class="receptor-option exploratory"><input type="checkbox" name="receptor_ids" value="8ZYQ" data-receptor-context="predict"><span><b>8ZYQ</b><small>Pimozide-bound · docking-only</small></span></label>
+              <label class="receptor-option exploratory"><input type="checkbox" name="receptor_ids" value="9CHP" data-receptor-context="predict"><span><b>9CHP</b><small>High-K+ C4 · docking-only</small></span></label>
+              <label class="receptor-option exploratory"><input type="checkbox" name="receptor_ids" value="9CHQ" data-receptor-context="predict"><span><b>9CHQ</b><small>Low-K+ C4 · docking-only</small></span></label>
+            </div>
+            <p class="selector-boundary">Only 8ZYO is coupled to the receptor-aware model. Other states report docking diagnostics and do not change the default ligand prediction.</p>
+          </fieldset>
+          <details class="advanced-settings">
+            <summary>
+              <span><b>Advanced calculation options</b><small>Optional research comparisons and heavy-molecule diagnostics</small></span>
+            </summary>
+            <div class="advanced-settings-body">
+              <fieldset class="mode-selector feature-mode-selector">
+                <legend>Ligand feature mode</legend>
+                <label class="mode-option">
+                  <input type="radio" name="feature_mode" value="atomwise" checked>
+                  <span>
+                    <b>Atom-wise · validated default</b>
+                    <small>Frozen RDKit2D descriptors + Morgan atom-environment fingerprints</small>
+                  </span>
+                </label>
+                <label class="mode-option research-mode">
+                  <input type="radio" name="feature_mode" value="functional_group">
+                  <span>
+                    <b>Functional-group augmented</b>
+                    <small>Governed SMARTS groups + cLogP, TPSA, MW, charge, ring/linker, and interaction features</small>
+                  </span>
+                </label>
+              </fieldset>
+              <p class="selector-boundary">
+                The functional-group model is a real V15 research surface, but it did not show stable
+                held-out improvement and remains non-default. The validated atom-wise result is always retained.
+              </p>
+              <label class="advanced-check">
+                <input id="heavy-molecule-analysis" name="heavy_molecule_analysis" type="checkbox">
+                <span>
+                  <b>Expand heavy-molecule analysis</b>
+                  <small>Show size, flexibility, applicability, and &gt;750 Da docking-execution checks without rescaling the validated prediction.</small>
+                </span>
+              </label>
+            </div>
+          </details>
+          <div class="form-actions">
+            <button id="predict-button" class="button button-primary" type="submit">
+              <span class="button-label">Run prediction</span>
+              <span class="button-spinner" aria-hidden="true"></span>
+            </button>
+            <button id="clear-button" class="button button-secondary" type="button">Clear</button>
+          </div>
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section
+        id="optimize"
+        class="predict-section workflow-panel"
+        role="tabpanel"
+        aria-labelledby="workflow-tab-optimize optimize-title"
+        data-workflow-panel="optimize"
+        hidden
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Optimize hERG</p>
+            <h2 id="optimize-title">Compare or enumerate targeted structural edits</h2>
+          </div>
+          <p>
+            Manual mode compares one supplied candidate. Experimental generation enumerates bounded
+            one-step edits and prioritizes them with uncertainty and applicability penalties.
+          </p>
+        </div>
+        <form id="optimize-form" class="prediction-form" novalidate>
+          <fieldset class="mode-selector optimize-mode-selector">
+            <legend>Optimization workflow</legend>
+            <label class="mode-option">
+              <input type="radio" name="optimize_mode" value="manual" checked>
+              <span><b>Manual comparison</b><small>Parent + one supplied candidate</small></span>
+            </label>
+            <label class="mode-option research-mode">
+              <input type="radio" name="optimize_mode" value="generate" disabled>
+              <span><b>Generate candidates</b><small>Experimental · up to 100 bounded one-step edits</small></span>
+            </label>
+          </fieldset>
+          <div class="compare-input-grid">
+            <div>
+              <label for="parent-smiles">Parent SMILES</label>
+              <textarea
+                id="parent-smiles"
+                name="parent_smiles"
+                rows="5"
+                spellcheck="false"
+                autocapitalize="none"
+                autocomplete="off"
+                maxlength="4096"
+                required
+                placeholder="Paste the parent SMILES"
+              ></textarea>
+            </div>
+            <div data-optimize-manual>
+              <label for="candidate-smiles">Edited candidate SMILES</label>
+              <textarea
+                id="candidate-smiles"
+                name="candidate_smiles"
+                rows="5"
+                spellcheck="false"
+                autocapitalize="none"
+                autocomplete="off"
+                maxlength="4096"
+                required
+                placeholder="Paste one edited-candidate SMILES"
+              ></textarea>
+            </div>
+          </div>
+          <div class="known-value-field" data-optimize-manual>
+            <label for="known-parent-ic50">Known parent hERG IC50 <span>(optional)</span></label>
+            <div class="input-with-unit">
+              <input id="known-parent-ic50" name="known_parent_ic50_um" type="number" min="0" step="any" inputmode="decimal">
+              <span>µM</span>
+            </div>
+            <p>Recorded as user-supplied context and kept separate from model predictions.</p>
+          </div>
+          <div class="experimental-control-grid" data-optimize-manual>
+            <fieldset id="mw-stress-control" class="stress-test-control" disabled>
+              <legend>Experimental sensitivity diagnostic</legend>
+              <label>
+                <input id="mw-delta-stress-test" name="mw_delta_stress_test" type="checkbox">
+                <span><b>Run MW-scaled delta stress test</b><small>Probe whether edit magnitude may be compressed for a high-MW pair.</small></span>
+              </label>
+              <p id="mw-stress-capability" class="selector-note">Checking availability for this server.</p>
+              <p class="selector-boundary">This opt-in stress test never replaces or recalibrates the displayed prediction.</p>
+            </fieldset>
+          </div>
+          <div id="generation-control" class="generation-control" hidden>
+            <label for="generated-candidate-count">Candidate count</label>
+            <input id="generated-candidate-count" name="max_candidates" type="number" min="1" max="100" step="1" value="100" inputmode="numeric">
+            <p>Deterministic RDKit enumeration. Valid structures may be fewer than requested for a simple parent.</p>
+            <p class="selector-boundary">No synthesis feasibility or experimental activity is claimed, and generated structures are never used for retraining.</p>
+          </div>
+          <div class="form-actions">
+            <button id="optimize-button" class="button button-primary" type="submit">
+              <span class="button-label">Compare structures</span>
+              <span class="button-spinner" aria-hidden="true"></span>
+            </button>
+            <button id="optimize-clear" class="button button-secondary" type="button">Clear</button>
+          </div>
+          <div id="optimize-status" class="status" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section
+        id="properties"
+        class="predict-section workflow-panel"
+        role="tabpanel"
+        aria-labelledby="workflow-tab-properties properties-title"
+        data-workflow-panel="properties"
+        hidden
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Compound Properties</p>
+            <h2 id="properties-title">Inspect calculated chemistry</h2>
+          </div>
+          <p>RDKit method labels are shown because descriptor values can differ across chemistry software.</p>
+        </div>
+        <form id="property-form" class="prediction-form" novalidate>
+          <label for="property-smiles-input">SMILES</label>
+          <textarea
+            id="property-smiles-input"
+            name="smiles"
+            rows="4"
+            spellcheck="false"
+            autocapitalize="none"
+            autocomplete="off"
+            maxlength="4096"
+            required
+          >C#CCC1=C(C)[C@H](OC(=O)[C@H]2[C@H](C=C(C)C)C2(C)C)CC1=O</textarea>
+          <div class="form-actions">
+            <button id="property-button" class="button button-primary" type="submit">
+              <span class="button-label">Calculate properties</span>
+              <span class="button-spinner" aria-hidden="true"></span>
+            </button>
+            <button id="property-to-predict" class="button button-secondary" type="button">Use this structure in Predict</button>
+            <button id="property-clear" class="button button-quiet" type="button">Clear</button>
+          </div>
+          <div id="property-status" class="status" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section
+        id="optimize-results"
+        class="results comparison-results"
+        aria-labelledby="optimize-results-title"
+        tabindex="-1"
+        data-workflow-result="optimize"
+        hidden
+      >
+        <div class="results-header">
+          <div>
+            <p id="optimize-results-kicker" class="eyebrow">Manual structural-edit analysis</p>
+            <div class="comparison-title-line">
+              <h2 id="optimize-results-title">Parent → candidate comparison</h2>
+              <span id="optimize-direction" class="direction-badge"></span>
+            </div>
+            <p id="optimize-runtime" class="runtime-note"></p>
+          </div>
+          <div class="result-actions" aria-label="Optimization result actions">
+            <button id="optimize-download-csv" class="button button-quiet" type="button">Download CSV</button>
+            <button id="optimize-download-json" class="button button-quiet" type="button">Download JSON</button>
+          </div>
+        </div>
+
+        <div class="feature-role-legend" aria-label="Scientific evidence roles">
+          <span class="feature-role prediction-active">Prediction-active</span>
+          <span class="feature-role calculated-property">Calculated property</span>
+          <span class="feature-role interpretation-only">Interpretation-only</span>
+        </div>
+
+        <div id="manual-optimize-result">
+        <div id="optimize-warning-list" class="warning-stack" aria-live="polite"></div>
+
+        <div class="molecule-comparison" aria-label="Parent and candidate model outputs">
+          <article class="molecule-card">
+            <p class="card-kicker">Parent structure</p>
+            <img id="parent-structure-image" class="structure-image" alt="Calculated 2D depiction of the parent molecule" hidden>
+            <code id="parent-smiles-output" class="comparison-smiles"></code>
+            <p id="known-parent-context" class="measured-context" hidden></p>
+            <div class="value-line"><strong id="parent-ic50"></strong><span>µM IC50</span></div>
+            <dl class="compact-metrics">
+              <div><dt>Predicted pIC50</dt><dd id="parent-pic50"></dd></div>
+              <div><dt>Regression-derived tier</dt><dd id="parent-tier"></dd></div>
+              <div><dt>Independent classifier</dt><dd id="parent-classifier"></dd></div>
+            </dl>
+          </article>
+
+          <div class="comparison-arrow" aria-hidden="true">→</div>
+
+          <article class="molecule-card candidate-card">
+            <p class="card-kicker">Edited candidate</p>
+            <img id="candidate-structure-image" class="structure-image" alt="Calculated 2D depiction of the edited candidate molecule" hidden>
+            <code id="candidate-smiles-output" class="comparison-smiles"></code>
+            <div class="value-line"><strong id="candidate-ic50"></strong><span>µM IC50</span></div>
+            <dl class="compact-metrics">
+              <div><dt>Predicted pIC50</dt><dd id="candidate-pic50"></dd></div>
+              <div><dt>Regression-derived tier</dt><dd id="candidate-tier"></dd></div>
+              <div><dt>Independent classifier</dt><dd id="candidate-classifier"></dd></div>
+            </dl>
+          </article>
+        </div>
+
+        <article class="change-summary" aria-labelledby="change-summary-title">
+          <div>
+            <p class="card-kicker">Model-output change</p>
+            <h3 id="change-summary-title">Predicted hERG shift</h3>
+          </div>
+          <dl class="change-metrics">
+            <div><dt>Δ IC50 (candidate − parent)</dt><dd id="optimize-delta-ic50"></dd></div>
+            <div><dt>Δ pIC50 (candidate − parent)</dt><dd id="optimize-delta-pic50"></dd></div>
+            <div><dt>Candidate / parent</dt><dd id="optimize-fold"></dd></div>
+            <div><dt>Morgan similarity</dt><dd id="optimize-similarity"></dd></div>
+          </dl>
+          <p id="optimize-direction-definition" class="panel-note"></p>
+          <div id="low-sensitivity-notice" class="callout" hidden></div>
+        </article>
+
+        <div class="comparison-detail-grid">
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="card-kicker">Calculated descriptors</p>
+                <h3>Property deltas</h3>
+              </div>
+              <p>Candidate minus parent; these values are not model attributions.</p>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th scope="col">Property</th><th scope="col">Parent</th><th scope="col">Candidate</th><th scope="col">Δ</th></tr>
+                </thead>
+                <tbody id="optimize-property-table"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="card-kicker">Ionization proxies</p>
+                <h3>Basicity and charge changes</h3>
+              </div>
+              <p>Structural motifs only; no numerical pKa is claimed.</p>
+            </div>
+            <dl id="optimize-basicity-list" class="metric-list"></dl>
+          </article>
+        </div>
+
+        <article class="result-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Detected structural edit</p>
+              <h3>Functional-group changes</h3>
+            </div>
+            <p id="functional-change-description"></p>
+          </div>
+          <div class="functional-change-grid">
+            <div><h4>Added</h4><div id="functional-groups-added" class="property-chip-list"></div></div>
+            <div><h4>Removed</h4><div id="functional-groups-removed" class="property-chip-list removed"></div></div>
+          </div>
+        </article>
+
+        <article class="result-panel interpretation-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Heuristic interpretation</p>
+              <h3>Medicinal-chemistry context</h3>
+            </div>
+            <span class="interpretation-label">Interpretation · not attribution</span>
+          </div>
+          <ul id="optimize-interpretation-list" class="interpretation-list"></ul>
+          <p id="optimize-claim-boundary" class="panel-note"></p>
+        </article>
+
+        <article id="mw-sensitivity-panel" class="result-panel stress-result-panel" hidden>
+          <div class="panel-heading">
+            <div><p class="card-kicker">Opt-in experimental diagnostic</p><h3>MW-scaled edit-magnitude stress test</h3></div>
+            <span class="interpretation-label">Does not alter prediction</span>
+          </div>
+          <dl id="mw-sensitivity-metrics" class="metric-list stress-metrics"></dl>
+          <div id="mw-sensitivity-statements" class="relationship-list"></div>
+          <p id="mw-sensitivity-boundary" class="panel-note"></p>
+        </article>
+        </div>
+
+        <div id="generated-optimize-result" hidden>
+          <article class="result-panel generation-summary-panel">
+            <div class="panel-heading">
+              <div><p class="card-kicker">Experimental enumeration</p><h3>Generation and evidence summary</h3></div>
+              <span class="interpretation-label">Prioritization · not confidence</span>
+            </div>
+            <dl id="generation-summary" class="metric-list generation-metrics"></dl>
+            <p id="generation-boundary" class="panel-note"></p>
+          </article>
+
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div><p class="card-kicker">Ranked bounded edits</p><h3>Candidate evidence table</h3></div>
+              <p>All generated structures are shown; ranking penalizes broad intervals, weak applicability, low parent similarity, and large property shifts.</p>
+            </div>
+            <div class="table-wrap generated-table-wrap">
+              <table class="generated-candidate-table">
+                <caption class="visually-hidden">Ranked generated candidates and the evidence used for prioritization.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Rank</th><th scope="col">Transformation</th><th scope="col">Predicted IC50</th>
+                    <th scope="col">ΔpIC50</th><th scope="col">90% interval</th><th scope="col">Parent similarity</th>
+                    <th scope="col">Applicability</th><th scope="col">Priority score</th>
+                  </tr>
+                </thead>
+                <tbody id="generated-candidate-table"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div><p class="card-kicker">Highest-ranked structures</p><h3>Top candidate details</h3></div>
+              <p>Point predictions remain hypotheses; inspect intervals, applicability, and transformations together.</p>
+            </div>
+            <div id="generated-candidate-cards" class="generated-candidate-grid"></div>
+          </article>
+          <p id="generated-claim-boundary" class="panel-note"></p>
+        </div>
+      </section>
+
+      <section
+        id="property-results"
+        class="results"
+        aria-labelledby="property-results-title"
+        tabindex="-1"
+        data-workflow-result="properties"
+        hidden
+      >
+        <div class="results-header">
+          <div>
+            <p class="eyebrow">Property Explorer</p>
+            <h2 id="property-results-title">Calculated compound properties</h2>
+            <img id="property-structure-image" class="structure-image prediction-structure-image" alt="Calculated 2D depiction of the submitted molecule" hidden>
+            <code id="property-smiles" class="canonical-smiles"></code>
+            <p id="property-standardization-note" class="panel-note"></p>
+            <p id="property-runtime" class="runtime-note"></p>
+          </div>
+          <div class="result-actions">
+            <button id="properties-result-to-predict" class="button button-quiet" type="button">Predict hERG for this structure</button>
+          </div>
+        </div>
+
+        <div class="feature-role-legend" aria-label="Scientific evidence roles">
+          <span class="feature-role calculated-property">Calculated property</span>
+          <span class="feature-role interpretation-only">Interpretation-only</span>
+        </div>
+
+        <article class="result-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Ionization and hERG context</p>
+              <h3>Basicity-related structural features</h3>
+            </div>
+            <p>Structural proxies only; this panel does not claim a calculated pKa.</p>
+          </div>
+          <dl id="basicity-summary" class="metric-list basicity-metrics"></dl>
+          <div id="herg-relationship-list" class="relationship-list"></div>
+          <p id="basicity-boundary" class="panel-note"></p>
+        </article>
+
+        <article class="result-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Method-labeled calculations</p>
+              <h3>Descriptor profile</h3>
+            </div>
+            <p>No hERG model or docking calculation is run in this mode.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Property</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Calculation</th>
+                </tr>
+              </thead>
+              <tbody id="property-table"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <div class="detail-grid">
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="card-kicker">Recognized chemistry</p>
+                <h3>Functional groups</h3>
+              </div>
+            </div>
+            <div id="functional-group-list" class="property-chip-list"></div>
+          </article>
+
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="card-kicker">Current receptor-model domain</p>
+                <h3>Docking applicability</h3>
+              </div>
+            </div>
+            <p id="property-docking-status" class="callout"></p>
+          </article>
+        </div>
+
+        <article class="result-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Retrospective association explorer</p>
+              <h3>Where these properties sit in the training corpus</h3>
+            </div>
+            <p>These are univariate associations, not causal effects or SHAP values.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Property</th>
+                  <th scope="col">Training percentile</th>
+                  <th scope="col">Nearby-band median pIC50</th>
+                  <th scope="col">Observed association</th>
+                </tr>
+              </thead>
+              <tbody id="property-association-table"></tbody>
+            </table>
+          </div>
+          <p id="property-boundary" class="panel-note"></p>
+        </article>
+      </section>
+
+      <section id="evaluation" class="evaluation-section" aria-labelledby="evaluation-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Measured release checks</p>
+            <h2 id="evaluation-title">Evaluation compounds</h2>
+          </div>
+          <p>Observed and predicted literature IC50 values are in µM; lower fold error is better.</p>
+        </div>
+        <article class="evaluation-panel">
+          <div class="table-wrap">
+            <table class="evaluation-table">
+              <caption>Public retrospective examples used to exercise both prediction modes.</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Example</th>
+                  <th scope="col">Observed IC50</th>
+                  <th scope="col">Ligand-only IC50</th>
+                  <th scope="col">Representative ligand + receptor IC50</th>
+                  <th scope="col">Public provenance</th>
+                  <th scope="col">Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Public comparator A</th>
+                  <td>43.353</td>
+                  <td>37.737 <small>(1.15×)</small></td>
+                  <td>≈46.419 <small>(1.07×)</small></td>
+                  <td>Zenodo 8359714 dev corpus · PubChem pIC50 Train · CID 16760153</td>
+                  <td>Exact training-overlap demonstration</td>
+                </tr>
+                <tr>
+                  <th scope="row">Public comparator B</th>
+                  <td>11.493</td>
+                  <td>12.343 <small>(1.07×)</small></td>
+                  <td>≈11.547 <small>(1.00×)</small></td>
+                  <td>Zenodo 8359714 dev corpus · PubChem pIC50 Train · CID 60196404; chloride salt standardized to parent</td>
+                  <td>Exact training-overlap demonstration</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="evaluation-note">
+            This selected panel is a release check, not an unbiased performance estimate. Both public
+            comparators are exact training overlaps. Their IC50 values are conversions of source-reported
+            PubChem pIC50 Train rows in the Zenodo 8359714 development corpus. Private internal structures and measurements are
+            intentionally excluded from the static website and remain in access-controlled local evaluation
+            artifacts, including the disclosed hard failure. Receptor figures are representative audit runs
+            because fresh 3D preparation and docking can vary slightly across service restarts.
+          </p>
+        </article>
+      </section>
+
+      <section id="results" class="results" aria-labelledby="results-title" tabindex="-1" data-workflow-result="predict" hidden>
+        <div class="results-header">
+          <div>
+            <p class="eyebrow">Prediction result</p>
+            <h2 id="results-title">Decision summary</h2>
+            <img id="prediction-structure-image" class="structure-image prediction-structure-image" alt="Calculated 2D depiction of the submitted molecule" hidden>
+            <code id="canonical-smiles" class="canonical-smiles"></code>
+            <p id="prediction-runtime" class="runtime-note"></p>
+          </div>
+          <div class="result-actions" aria-label="Result actions">
+            <button id="copy-smiles" class="button button-quiet" type="button">Copy SMILES</button>
+            <button id="download-csv" class="button button-quiet" type="button">Download CSV</button>
+            <button id="download-json" class="button button-quiet" type="button">Download JSON</button>
+          </div>
+        </div>
+
+        <div class="feature-role-legend" aria-label="Scientific evidence roles">
+          <span class="feature-role prediction-active">Prediction-active</span>
+          <span class="feature-role calculated-property">Calculated property</span>
+          <span class="feature-role interpretation-only">Interpretation-only</span>
+          <span class="feature-role docking-diagnostic">Docking diagnostic when requested</span>
+        </div>
+
+        <div class="summary-grid">
+          <article class="summary-card classification-card">
+            <p class="card-kicker">Independent classifier probabilities</p>
+            <div class="tier-line">
+              <span><span id="classification-tier" class="tier-badge"></span><small id="classification-tier-definition" class="tier-definition"></small></span>
+              <span id="classification-confidence" class="confidence-text"></span>
+            </div>
+            <div id="classification-bars" class="probability-list" aria-label="Class probabilities"></div>
+            <p class="card-note">
+              Produced by a separate categorical model (Safe: IC50 &gt;30 µM; Moderate: 1 ≤ IC50 ≤ 30 µM; Potent: IC50 &lt;1 µM).
+              These percentages are not derived from the IC50 estimate.
+            </p>
+          </article>
+
+          <article class="summary-card regression-card">
+            <p class="card-kicker">Continuous regression estimate · <span id="primary-model-label"></span></p>
+            <div class="value-line"><strong id="primary-ic50"></strong><span>µM</span></div>
+            <dl class="compact-metrics">
+              <div><dt>pIC50</dt><dd id="primary-pic50"></dd></div>
+              <div><dt>Point-estimate tier</dt><dd><span id="regression-tier"></span><small id="regression-tier-definition" class="tier-definition inline"></small></dd></div>
+              <div><dt>90% interval</dt><dd id="primary-interval"></dd></div>
+            </dl>
+            <div id="regression-tier-probability-block" class="regression-probability-block" hidden>
+              <p class="probability-surface-label">Global OOF-residual tier frequencies</p>
+              <div id="regression-tier-bars" class="probability-list" aria-label="Global out-of-fold residual tier frequencies"></div>
+            </div>
+            <p id="selected-model-note" class="card-note">
+              The tier is a deterministic bin of the point estimate. The bars apply the pooled signed
+              out-of-fold residual distribution and are empirical frequencies—not query-calibrated class probabilities.
+            </p>
+          </article>
+
+          <article class="summary-card reliability-card">
+            <p class="card-kicker">Decision reliability</p>
+            <div class="value-line"><strong id="decision-confidence"></strong></div>
+            <p id="decision-explanation" class="card-note"></p>
+            <div id="overlap-notice" class="inline-notice"></div>
+          </article>
+        </div>
+        <div id="model-coherence-notice" class="callout model-coherence" role="note"></div>
+
+        <article id="functional-group-result-panel" class="result-panel functional-group-panel" hidden>
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Selected functional-group research surface</p>
+              <h3>Governed V15 feature comparison</h3>
+            </div>
+            <span class="research-badge">Non-default · failed promotion</span>
+          </div>
+          <div class="feature-comparison-grid">
+            <div><span>Validated atom-wise IC50</span><strong id="fg-default-ic50"></strong><small>µM</small></div>
+            <div><span>Functional-group IC50</span><strong id="fg-research-ic50"></strong><small>µM</small></div>
+            <div><span>Δ pIC50 vs atom-wise</span><strong id="fg-delta-pic50"></strong><small id="fg-fold-change"></small></div>
+          </div>
+          <details class="result-more-info">
+            <summary>See prediction-active functional groups and linear contributions</summary>
+            <div id="fg-active-groups" class="property-chip-list"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th scope="col">Feature</th><th scope="col">Linear pIC50 contribution</th></tr></thead>
+                <tbody id="fg-contribution-table"></tbody>
+              </table>
+            </div>
+          </details>
+          <p id="fg-validation-note" class="panel-note"></p>
+          <div id="fg-boundary" class="callout warning"></div>
+        </article>
+
+        <details id="heavy-analysis-panel" class="result-panel heavy-analysis-panel" hidden>
+          <summary><span><b>Heavy-molecule analysis</b><small>Expanded size, flexibility, applicability, and docking checks</small></span></summary>
+          <dl class="metric-list heavy-analysis-metrics">
+            <div><dt>Molecular weight</dt><dd id="heavy-analysis-mw"></dd></div>
+            <div><dt>Heavy atoms</dt><dd id="heavy-analysis-atoms"></dd></div>
+            <div><dt>Rotatable bonds</dt><dd id="heavy-analysis-rotors"></dd></div>
+            <div><dt>cLogP / TPSA</dt><dd id="heavy-analysis-properties"></dd></div>
+            <div><dt>Vina execution</dt><dd id="heavy-analysis-docking"></dd></div>
+            <div><dt>Receptor-model domain</dt><dd id="heavy-analysis-domain"></dd></div>
+          </dl>
+          <p id="heavy-analysis-note" class="panel-note"></p>
+        </details>
+
+        <article class="result-panel research-preview-panel" aria-labelledby="research-preview-title">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">V14/V14.1 research preview</p>
+              <h3 id="research-preview-title">Task-specific cross-campaign ligand recalibration</h3>
+            </div>
+            <span class="research-badge">Non-default · retrospective</span>
+          </div>
+          <div class="research-preview-grid">
+            <div class="research-preview-result">
+              <span>Preview classification</span>
+              <div class="tier-line">
+                <strong id="research-classification-tier" class="tier-badge"></strong>
+                <small id="research-classification-confidence"></small>
+              </div>
+              <div
+                id="research-classification-bars"
+                class="probability-list"
+                aria-label="Research-preview class probabilities"
+              ></div>
+            </div>
+            <div class="research-preview-result">
+              <span>Preview literature IC50</span>
+              <div class="value-line"><strong id="research-ic50"></strong><span>µM</span></div>
+              <small>pIC50 <b id="research-pic50"></b></small>
+            </div>
+            <div class="research-preview-result">
+              <span>Six-campaign validation</span>
+              <strong id="research-balanced-accuracy" class="research-metric"></strong>
+              <small id="research-gain"></small>
+            </div>
+          </div>
+          <div id="research-receptor-status" class="callout warning"></div>
+          <p id="research-boundary" class="panel-note"></p>
+        </article>
+
+        <article id="receptor-result-panel" class="result-panel receptor-panel" aria-labelledby="receptor-result-title" hidden>
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Ligand + receptor research result</p>
+              <h3 id="receptor-result-title">8ZYO AutoDock Vina receptor-aware comparison</h3>
+            </div>
+            <span class="research-badge">Docking diagnostic + non-default model</span>
+          </div>
+          <div class="research-preview-grid">
+            <div class="research-preview-result">
+              <span>Receptor-aware classification</span>
+              <div class="tier-line">
+                <strong id="receptor-classification-tier" class="tier-badge"></strong>
+                <small id="receptor-classification-confidence"></small>
+              </div>
+              <div
+                id="receptor-classification-bars"
+                class="probability-list"
+                aria-label="Receptor-aware class probabilities"
+              ></div>
+            </div>
+            <div class="research-preview-result">
+              <span>Receptor-aware literature IC50</span>
+              <div class="value-line"><strong id="receptor-ic50"></strong><span>µM</span></div>
+              <small>pIC50 <b id="receptor-pic50"></b> · Δ vs ligand <b id="receptor-delta"></b></small>
+            </div>
+            <div class="research-preview-result">
+              <span>Docking summary</span>
+              <strong id="receptor-affinity" class="research-metric"></strong>
+              <small id="receptor-docking-summary"></small>
+            </div>
+          </div>
+          <p class="panel-note">
+            Receptor-aware classification and IC50 regression are separate research models and may disagree;
+            read each output independently.
+          </p>
+          <dl class="metric-list receptor-metrics">
+            <div><dt>Receptor state</dt><dd id="receptor-state"></dd></div>
+            <div><dt>Best-pose contacts</dt><dd id="receptor-contacts"></dd></div>
+            <div><dt>Fresh receptor runtime</dt><dd id="receptor-runtime"></dd></div>
+            <div><dt>Cache</dt><dd id="receptor-cache"></dd></div>
+          </dl>
+          <div id="receptor-validation-status" class="callout warning"></div>
+          <p id="receptor-boundary" class="panel-note"></p>
+        </article>
+
+        <article id="predict-multi-receptor-panel" class="result-panel multi-receptor-panel" hidden>
+          <div class="panel-heading">
+            <div><p class="card-kicker">Exploratory receptor panel</p><h3>Multi-state docking diagnostics</h3></div>
+            <span class="research-badge">Docking comparison · non-default</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Receptor</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Best Vina score</th><th scope="col">Poses</th></tr></thead>
+              <tbody id="predict-multi-receptor-table"></tbody>
+            </table>
+          </div>
+          <p id="predict-multi-receptor-boundary" class="panel-note"></p>
+        </article>
+
+        <article class="result-panel curve-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Same-assay functional curve</p>
+              <h3>Direct IC10, IC30, and IC50 regression</h3>
+            </div>
+            <span id="projection-badge" class="projection-badge"></span>
+          </div>
+          <div class="endpoint-grid">
+            <div class="endpoint"><span>IC10</span><strong id="direct-ic10"></strong><small>µM</small></div>
+            <div class="curve-step" aria-hidden="true"></div>
+            <div class="endpoint"><span>IC30</span><strong id="direct-ic30"></strong><small>µM</small></div>
+            <div class="curve-step" aria-hidden="true"></div>
+            <div class="endpoint"><span>IC50</span><strong id="direct-ic50"></strong><small>µM</small></div>
+          </div>
+          <div id="cross-assay-notice" class="callout"></div>
+        </article>
+
+        <div class="detail-grid">
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="card-kicker">Applicability</p>
+                <h3>Analogue support</h3>
+              </div>
+            </div>
+            <dl class="metric-list">
+              <div><dt>Nearest similarity</dt><dd id="nearest-similarity"></dd></div>
+              <div><dt>Analogues ≥ 0.50</dt><dd id="analogue-count"></dd></div>
+              <div><dt>Local retrospective MAE</dt><dd id="local-mae"></dd></div>
+              <div><dt>Domain</dt><dd id="domain-label"></dd></div>
+            </dl>
+            <p id="domain-interpretation" class="panel-note"></p>
+          </article>
+
+          <article class="result-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="card-kicker">Calculated structure</p>
+                <h3>Compound properties</h3>
+              </div>
+            </div>
+            <dl class="metric-list">
+              <div><dt>Molecular weight</dt><dd id="molecular-weight"></dd></div>
+              <div><dt>cLogP</dt><dd id="clogp"></dd></div>
+              <div><dt>TPSA</dt><dd id="tpsa"></dd></div>
+              <div><dt>HBD / HBA</dt><dd id="hbd-hba"></dd></div>
+              <div><dt>Rotatable bonds</dt><dd id="rotatable-bonds"></dd></div>
+              <div><dt>Formal charge</dt><dd id="prediction-formal-charge"></dd></div>
+              <div><dt>Basic-center proxy</dt><dd id="prediction-basic-centers"></dd></div>
+            </dl>
+            <div id="prediction-functional-groups" class="property-chip-list compact-chips"></div>
+            <p id="prediction-property-method" class="panel-note"></p>
+            <div id="prediction-mw-warning" class="callout warning" role="note" hidden></div>
+          </article>
+        </div>
+
+        <article class="result-panel analogue-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="card-kicker">Training-data privacy</p>
+              <h3>Per-record analogue details withheld</h3>
+            </div>
+            <p>Aggregate similarity and local held-out error remain available in the applicability panel.</p>
+          </div>
+          <p id="analogue-disclosure" class="callout" role="note">
+            Training-record identifiers, structures, measurements, and per-record errors are not disclosed by this release.
+          </p>
+        </article>
+      </section>
+
+      <section id="evidence" class="evidence-section" aria-labelledby="evidence-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Evidence snapshot</p>
+            <h2 id="evidence-title">What supports the current release</h2>
+          </div>
+          <p>Metrics are in pIC units and reflect scaffold-aware internal or strict external evaluations.</p>
+        </div>
+        <div class="evidence-grid">
+          <article>
+            <span class="evidence-number">18,801</span>
+            <h3>IC50 training structures</h3>
+            <p>Fast 2D+Morgan nested scaffold-held-out MAE: <b>0.437</b>.</p>
+          </article>
+          <article>
+            <span class="evidence-number">110</span>
+            <h3>External 2025 panel</h3>
+            <p>Frozen ligand regression MAE: <b>0.482</b>.</p>
+          </article>
+          <article>
+            <span class="evidence-number">215</span>
+            <h3>External 2026 panel</h3>
+            <p>Frozen ligand regression MAE: <b>0.370</b>.</p>
+          </article>
+          <article>
+            <span class="evidence-number">0</span>
+            <h3>Endpoint order violations</h3>
+            <p>Deterministic projection enforces IC10 ≤ IC30 ≤ IC50.</p>
+          </article>
+          <article>
+            <span class="evidence-number">1,224</span>
+            <h3>Cross-campaign challenge rows</h3>
+            <p>Six held-out campaigns support a non-default linear-classification/tree-regression preview.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="limitations" class="limitations" aria-labelledby="limitations-title">
+        <p class="eyebrow">Interpretation boundary</p>
+        <h2 id="limitations-title">A research prediction is a hypothesis, not a safety determination.</h2>
+        <div class="limitations-grid">
+          <p>Use applicability and intervals alongside every point estimate. Low-domain predictions should be treated as high risk.</p>
+          <p>The direct curve and literature IC50 are different assay domains and should not be averaged.</p>
+          <p>The optional receptor-aware output combines ligand and receptor features, but remains an experimental diagnostic and does not alter the default.</p>
+          <p>Results are not prospectively validated and are not intended for clinical, regulatory, or patient-care decisions.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>hERG Prediction Platform · Research use only</p>
+      <p>Submitted structures are not written to a request log; receptor repeats may use a process-memory cache until the service stops.</p>
+    </footer>
+  </body>
+</html>

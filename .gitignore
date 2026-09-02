@@ -17,6 +17,7 @@ htmlcov/
 *.part
 .env
 .env.*
+.codex_tmp/
 
 # Local data and heavyweight benchmark artifacts.
 /research/data/internal/

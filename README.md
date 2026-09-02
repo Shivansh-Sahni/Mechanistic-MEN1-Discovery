@@ -93,6 +93,31 @@ pytest -q pipeline/tests
 pytest -q -c packages/menin-edit/pyproject.toml packages/menin-edit/tests
 ```
 
+## hERG prediction website
+
+Validate the launch-ready local website with:
+
+```bash
+PYTHONPATH=pipeline/scripts .venv/bin/python \
+  pipeline/scripts/run_herg_prediction_website.py validate
+```
+
+For local preview, private HTTPS review, and shutdown instructions, see the
+[website launch guide](docs/herg_website_launch.md).
+
+The research interface now provides **Predict**, **Optimize**, and **Properties** workspaces.
+Optimize supports a manual parent/candidate comparison plus explicitly experimental generation of
+bounded, chemically valid one-step edits. Both use real frozen-model outputs and calculated
+property deltas; generated candidates are hypotheses, not synthesis or activity claims. Properties
+exposes RDKit descriptors, functional-group and basicity proxies, training-distribution context,
+and structure-standardization disclosures without running a prediction. Measured close-analogue
+series can be evaluated with the [paired-edit evaluator](docs/herg_paired_edit_evaluation.md).
+
+The default decision remains the fast ligand-only path. A separate V14/V14.1 retrospective
+preview is available in the result page, and an optional 8ZYO AutoDock Vina mode runs true
+ligand+receptor feature models. Receptor-aware outputs remain visibly non-default after linear,
+nonlinear, six-campaign, and direct-endpoint challenge tests failed to show a conclusive gain.
+
 ## Data availability
 
 Source datasets that are not publicly distributable are not included. The checked-in examples and public-data workflow remain independently usable.
